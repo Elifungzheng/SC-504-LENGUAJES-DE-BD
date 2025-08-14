@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 const FormInsertUsuario = ({ onUsuarioCreado }) => {
   // Estado local para cada campo del formulario
@@ -10,6 +12,7 @@ const FormInsertUsuario = ({ onUsuarioCreado }) => {
   const [password_hash, setPasswordHash] = useState('');
   const [correo, setCorreo] = useState('');
   const [rol_id, setRolId] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,7 +44,7 @@ const FormInsertUsuario = ({ onUsuarioCreado }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
+      <form onSubmit={handleSubmit} style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' }}>
       <h3>Crear nuevo usuario</h3>
       <input
         type="number"
@@ -49,6 +52,7 @@ const FormInsertUsuario = ({ onUsuarioCreado }) => {
         value={usuario_id}
         onChange={(e) => setUsuarioId(e.target.value)}
         required
+        style={{ padding: '6px' }}
       />
       <input
         type="text"
@@ -56,6 +60,7 @@ const FormInsertUsuario = ({ onUsuarioCreado }) => {
         value={nombre_usuario}
         onChange={(e) => setNombreUsuario(e.target.value)}
         required
+        style={{ padding: '6px' }}
       />
       <input
         type="password"
@@ -63,6 +68,7 @@ const FormInsertUsuario = ({ onUsuarioCreado }) => {
         value={password_hash}
         onChange={(e) => setPasswordHash(e.target.value)}
         required
+        style={{ padding: '6px' }}
       />
       <input
         type="email"
@@ -70,6 +76,7 @@ const FormInsertUsuario = ({ onUsuarioCreado }) => {
         value={correo}
         onChange={(e) => setCorreo(e.target.value)}
         required
+        style={{ padding: '6px' }}
       />
       <input
         type="number"
@@ -77,10 +84,14 @@ const FormInsertUsuario = ({ onUsuarioCreado }) => {
         value={rol_id}
         onChange={(e) => setRolId(e.target.value)}
         required
+        style={{ padding: '6px' }}
       />
-      <button type="submit">Crear Usuario</button>
+        <button type="submit" style={{ padding: '6px 10px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          Crear Usuario</button>
+        <button type="button" onClick={() => navigate(-1)} style={{ padding: '6px 10px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          Volver</button>
     </form>
   );
-};
+}
 
 export default FormInsertUsuario;

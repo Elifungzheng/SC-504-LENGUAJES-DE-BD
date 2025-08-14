@@ -1,29 +1,29 @@
 //src/pages/roles.js
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import FormInsertRol from '../components/FormInsertRol';
 
-  const Roles = () => {
+const Roles = () => {
   const [roles, setRoles] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-  const [editandoId, setEditandoId] = useState(null);
+  const [editandoRolId, setEditandoRolId] = useState(null);
   const [nombreEditado, setNombreEditado] = useState('');
   const [descripcionEditada, setDescripcionEditada] = useState('');
 
+  // Cargar roles desde backend
   const cargarRoles = async () => {
     setCargando(true);
-    axios.get('http://localhost:3001/api/roles')
-      .then(response => {
-        setRoles(response.data);
-        setCargando(false);
-      })
-      .catch(error => {
-        setError('Error al obtener roles');
-        setCargando(false);
-        console.error(error);
-      });
+    try {
+      const response = await axios.get('http://localhost:3001/api/roles');
+      setRoles(response.data);
+    } catch (err) {
+      setError('Error al obtener roles');
+      console.error(err);
+    } finally {
+      setCargando(false);
+    }
   };
 
   useEffect(() => {
@@ -31,46 +31,48 @@ import FormInsertRol from '../components/FormInsertRol';
   }, []);
 
 
+  // Iniciar edición
+  const iniciarEdicion = (id, nombreActual, descripcionActual) => {
+    setEditandoRolId(id);
+    setNombreEditado(nombreActual);
+    setDescripcionEditada(descripcionActual);
+  };
 
+  // Cancelar edición
+  const cancelarEdicion = () => {
+    setEditandoRolId(null);
+    setNombreEditado('');
+    setDescripcionEditada('');
+  };
 
-  const iniciarEdicion = (rol_id, nombre, descripcion) => {
-  setEditandoId(rol_id);  
-  setNombreEditado(nombre);
-  setDescripcionEditada(descripcion);
-};
-
-const cancelarEdicion = () => {
-  setEditandoId(null);
-  setNombreEditado('');
-  setDescripcionEditada('');
-};
-
-const guardarCambios = async (id) => {
-  try {
-    const response = await fetch(`http://localhost:3001/api/roles/${id}`, {
+  // Guardar cambios
+  const guardarCambios = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/roles/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: nombreEditado, descripcion: descripcionEditada }),
-    });
+      body: JSON.stringify({ nombre: nombreEditado,
+        descripcion: descripcionEditada, }),        
+      });
 
-    if (response.ok) {
-      alert('Rol actualizado correctamente');
-      cancelarEdicion();
-      cargarRoles(); // recarga la lista con el rol actualizado
-    } else {
+      if (response.ok) {
+        alert('Rol actualizado correctamente');
+        cancelarEdicion();
+        cargarRoles();
+      }else {
       alert('Error al actualizar el rol');
+    } 
+  }catch (err) {
+      console.error('Error al actualizar rol:', err);
+      alert('Ocurrió un error al actualizar el rol');
     }
-  } catch (error) {
-    console.error('Error al actualizar rol:', error);
-    alert('Ocurrió un error al actualizar el rol');
-  }
-};
+  };
 
 
 
-
-  // Función para eliminar rol
+  // Eliminar rol
   const eliminarRol = async (id) => {
+    if (!window.confirm('¿Desea eliminar este rol?')) return;
     try {
       const response = await fetch(`http://localhost:3001/api/roles/${id}`, {
         method: 'DELETE',
@@ -93,18 +95,9 @@ const guardarCambios = async (id) => {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '20px', textAlign: 'center' }}>Gestión de Roles</h1>
+      <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Gestión de Roles</h1>
 
-      <table
-        style={{
-          borderCollapse: 'collapse',
-          width: '100%',
-          backgroundColor: '#f9f9f9',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          borderRadius: '8px',
-          overflow: 'hidden',
-        }}
-      >
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead style={{ backgroundColor: '#4CAF50', color: 'white' }}>
           <tr>
             <th style={{ padding: '10px' }}>ID</th>
@@ -114,18 +107,18 @@ const guardarCambios = async (id) => {
           </tr>
         </thead>
         <tbody>
-          {roles.map(rol => (
+          {roles.map((rol) => (
             <tr key={rol.ROL_ID} style={{ borderBottom: '1px solid #ddd' }}>
               <td style={{ padding: '10px' }}>{rol.ROL_ID}</td>
 
-              {editandoId === rol.ROL_ID ? (
+              {editandoRolId === rol.ROL_ID ? (
                 <>
                   <td style={{ padding: '10px' }}>
                     <input
                       type="text"
                       value={nombreEditado}
                       onChange={(e) => setNombreEditado(e.target.value)}
-                      style={{ padding: '6px', width: '90%' }}
+                      style={{ width: '90%', padding: '6px' }}
                     />
                   </td>
                   <td style={{ padding: '10px' }}>
@@ -133,37 +126,31 @@ const guardarCambios = async (id) => {
                       type="text"
                       value={descripcionEditada}
                       onChange={(e) => setDescripcionEditada(e.target.value)}
-                      style={{ padding: '6px', width: '90%' }}
+                      style={{ width: '90%', padding: '6px' }}
                     />
                   </td>
                   <td style={{ padding: '10px' }}>
-                    <button
-                      onClick={() => guardarCambios(rol.ROL_ID)}
-                      style={{
-                        padding: '6px 10px',
-                        backgroundColor: '#4CAF50',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        marginRight: '5px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Guardar
-                    </button>
-                    <button
-                      onClick={cancelarEdicion}
-                      style={{
-                        padding: '6px 10px',
-                        backgroundColor: '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Cancelar
-                    </button>
+                    <button onClick={() => guardarCambios(rol.ROL_ID)} 
+                    style={{
+                    padding: '6px 10px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    marginRight: '5px',
+                    cursor: 'pointer',
+                  }}
+                    >Guardar</button>
+                    <button onClick={cancelarEdicion}
+                    style={{
+                    padding: '6px 10px',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                    >Cancelar</button>
                   </td>
                 </>
               ) : (
@@ -171,33 +158,28 @@ const guardarCambios = async (id) => {
                   <td style={{ padding: '10px' }}>{rol.NOMBRE}</td>
                   <td style={{ padding: '10px' }}>{rol.DESCRIPCION}</td>
                   <td style={{ padding: '10px' }}>
-                    <button
-                      onClick={() => iniciarEdicion(rol.NOMBRE, rol.DESCRIPCION)}
+                    <button onClick={() => iniciarEdicion(rol.ROL_ID, rol.NOMBRE, rol.DESCRIPCION)} 
+                    style={{
+                    padding: '6px 10px',
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    marginRight: '5px',
+                    cursor: 'pointer',
+                  }}
+                      >Editar</button>
+                      
+                    <button onClick={() => eliminarRol(rol.ROL_ID)}
                       style={{
-                        padding: '6px 10px',
-                        backgroundColor: '#2196F3',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        marginRight: '5px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => eliminarRol(rol.ROL_ID)}
-                      style={{
-                        padding: '6px 10px',
-                        backgroundColor: '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Eliminar
-                    </button>
+                    padding: '6px 10px',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                      >Eliminar</button>
                   </td>
                 </>
               )}
@@ -206,55 +188,10 @@ const guardarCambios = async (id) => {
         </tbody>
       </table>
 
-      <h2 style={{ marginTop: '30px', textAlign: 'center' }}>Agregar nuevo rol</h2>
+      <h2 style={{ textAlign: 'center', marginTop: '30px' }}>Agregar nuevo rol</h2>
       <FormInsertRol onRolCreado={cargarRoles} />
     </div>
   );
 };
 
 export default Roles;
-
-
-            /*<td>{rol.NOMBRE}</td>
-            <td>{rol.DESCRIPCION}</td>
-            <td>
-              {descripcionEditada === rol.DESCRIPCION ? (
-                <input
-                  type="descripcion"
-                  value={descripcionEditada}
-                  onChange={(e) => setDescripcionEditada(e.target.value)}
-                />
-              ) : (
-                rol.DESCRIPCION
-              )}
-            </td>
-            <td>{rol.DESCRIPCION}</td>
-            <td>
-              {descripcionEditada === rol.DESCRIPCION ? (
-                <>
-                    <button onClick={() => guardarDescripcion(rol.DESCRIPCION)}>Guardar</button>
-                    <button onClick={() => cancelarEdicion}>Cancelar</button>
-                  </>
-                ) : (
-                  <>
-          
-                    <button onClick={() => iniciarEdicion(rol.NOMBRE, rol.DESCRIPCION)}>Editar</button>
-                    <button onClick={() => eliminarRol(rol.ROL_ID)}>Eliminar</button>
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-    <h2>Editar de Roles</h2>
-
-    <FormInsertRol onRolCreado={cargarRoles} />
-
-    </div>
-  );
-}
-
-export default Roles;*/
-

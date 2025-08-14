@@ -4,26 +4,7 @@ import React, { useEffect, useState } from 'react';
 import FormInsertUsuario from '../components/FormInsertUsuario';
 import axios from 'axios';
 
-/*const Usuarios = () => {
-  const [usuarios, setUsuarios] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    axios.get('http://localhost:3001/api/usuarios')
-      .then(response => {
-        setUsuarios(response.data);
-        setCargando(false);
-      })
-      .catch(error => {
-        setError('Error al obtener usuarios');
-        setCargando(false);
-        console.error(error);
-      });
-  }, []);
-
-  if (cargando) return <div>Cargando usuarios...</div>;
-  if (error) return <div>{error}</div>;*/
 
   const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -88,6 +69,7 @@ const guardarCorreo = async (id) => {
 
   // Función para eliminar usuario
   const eliminarUsuario = async (id) => {
+    if (!window.confirm('¿Desea eliminar este usuario?')) return;
     try {
       const response = await fetch(`http://localhost:3001/api/usuarios/${id}`, {
         method: 'DELETE',
@@ -111,57 +93,118 @@ const guardarCorreo = async (id) => {
 
   return (
   <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-    <h2>Lista de Usuarios</h2>
+  <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Lista de Usuarios</h1>
 
-    <FormInsertUsuario onUsuarioCreado={cargarUsuarios} />
-
-    <table border="1" cellPadding="8" style={{ borderCollapse: 'collapse' }}>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre de Usuario</th>
-          <th>Email</th>
-          <th>ID Rol</th>
-          <th>Acciones</th>
+  <table
+    style={{
+      borderCollapse: 'collapse',
+      width: '100%',
+      backgroundColor: '#f9f9f9',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      borderRadius: '8px',
+      overflow: 'hidden',
+    }}
+  >
+    <thead style={{ backgroundColor: '#4CAF50', color: 'white' }}>
+      <tr>
+        <th style={{ padding: '10px' }}>ID</th>
+        <th style={{ padding: '10px' }}>Nombre de Usuario</th>
+        <th style={{ padding: '10px' }}>Email</th>
+        <th style={{ padding: '10px' }}>ID Rol</th>
+        <th style={{ padding: '10px' }}>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {usuarios.map(usuario => (
+        <tr key={usuario.USUARIO_ID} style={{ borderBottom: '1px solid #ddd' }}>
+          <td style={{ padding: '10px' }}>{usuario.USUARIO_ID}</td>
+          <td style={{ padding: '10px' }}>{usuario.NOMBRE_USUARIO}</td>
+          <td style={{ padding: '10px' }}>
+            {editandoUsuarioId === usuario.USUARIO_ID ? (
+              <input
+                type="email"
+                value={correoEditado}
+                onChange={(e) => setCorreoEditado(e.target.value)}
+                style={{ padding: '6px', width: '90%' }}
+              />
+            ) : (
+              usuario.CORREO
+            )}
+          </td>
+          <td style={{ padding: '10px' }}>{usuario.ROL_ID}</td>
+          <td style={{ padding: '10px' }}>
+            {editandoUsuarioId === usuario.USUARIO_ID ? (
+              <>
+                <button
+                  onClick={() => guardarCorreo(usuario.USUARIO_ID)}
+                  style={{
+                    padding: '6px 10px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    marginRight: '5px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Guardar
+                </button>
+                <button
+                  onClick={cancelarEdicion}
+                  style={{
+                    padding: '6px 10px',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => iniciarEdicion(usuario.USUARIO_ID, usuario.CORREO)}
+                  style={{
+                    padding: '6px 10px',
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    marginRight: '5px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Editar correo
+                </button>
+                <button
+                  onClick={() => eliminarUsuario(usuario.USUARIO_ID)}
+                  style={{
+                    padding: '6px 10px',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Eliminar
+                </button>
+              </>
+            )}
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        {usuarios.map(usuario => (
-          <tr key={usuario.USUARIO_ID}>
-            <td>{usuario.USUARIO_ID}</td>
-            <td>{usuario.NOMBRE_USUARIO}</td>
-            <td>
-              {editandoUsuarioId === usuario.USUARIO_ID ? (
-                <input
-                  type="email"
-                  value={correoEditado}
-                  onChange={(e) => setCorreoEditado(e.target.value)}
-                />
-              ) : (
-                usuario.CORREO
-              )}
-            </td>
-            <td>{usuario.ROL_ID}</td>
-            <td>
-              {editandoUsuarioId === usuario.USUARIO_ID ? (
-                <>
-                  <button onClick={() => guardarCorreo(usuario.USUARIO_ID)}>Guardar</button>
-                  <button onClick={cancelarEdicion}>Cancelar</button>
-                </>
-              ) : (
-                <>
-                  <button onClick={() => iniciarEdicion(usuario.USUARIO_ID, usuario.CORREO)}>Editar correo</button>
-                  <button onClick={() => eliminarUsuario(usuario.USUARIO_ID)}>Eliminar</button>
-                </>
-              )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);};
+      ))}
+    </tbody>
+  </table>
 
+  <h2 style={{ textAlign: 'center', marginTop: '30px' }}>Agregar nuevo usuario</h2>
+  <FormInsertUsuario onUsuarioCreado={cargarUsuarios} />
+</div>
+
+);};
 
 
 
