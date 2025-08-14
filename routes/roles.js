@@ -71,14 +71,14 @@ router.get('/:id', async (req, res) => {
 
 // Insertar rol
 router.post('/', async (req, res) => {
-  const { nombre, descripcion } = req.body;
+  const { rol_id, nombre, descripcion } = req.body;
   let connection;
   try {
     connection = await oracledb.getConnection();
 
     await connection.execute(
-      `BEGIN pkg_rol.insertar_rol(:nombre, :descripcion); END;`,
-      { nombre, descripcion },
+      `BEGIN pkg_rol.insertar_rol(:id, :nombre, :descripcion); END;`,
+      { id: rol_id, nombre: nombre, descripcion: descripcion },
       { autoCommit: true }
     );
 
@@ -96,14 +96,15 @@ router.post('/', async (req, res) => {
 
 // Actualizar rol
 router.put('/:id', async (req, res) => {
+  const rol_id = req.params.id;
   const { nombre, descripcion } = req.body;
   let connection;
   try {
     connection = await oracledb.getConnection();
 
     await connection.execute(
-      `BEGIN pkg_rol.actualizar_rol(:nombre, :descripcion); END;`,
-      { nombre, descripcion },
+      `BEGIN pkg_rol.actualizar_rol(:id, :nombre, :descripcion); END;`,
+      { id: rol_id, nombre, descripcion },
       { autoCommit: true }
     );
 
@@ -121,13 +122,14 @@ router.put('/:id', async (req, res) => {
 
 // Eliminar rol
 router.delete('/:id', async (req, res) => {
+  const id = req.params.id;
   let connection;
   try {
     connection = await oracledb.getConnection();
 
     await connection.execute(
-      `BEGIN pkg_rol.eliminar_rol(:id); END;`,
-      { id: req.params.id },
+      `BEGIN pkg_rol.eliminar_rol(:id_rol); END;`,
+      { id_rol: rol_id },
       { autoCommit: true }
     );
 
